@@ -1,0 +1,46 @@
+'''
+title: "Car Sales on Craigslist"
+author: "Samira Nassi"
+date: "4/22/2024"
+'''
+Description:
+A series of visual representations to understand expected prices and commonalities when shopping for used cars on craigslist with an interest in Arizona.
+
+library(ggplot2)
+library(tidyverse)
+library(scales)
+
+## Importing the data set
+cars <- read.csv("C:/Users/nassi/OneDrive/Documents/DATA_375/Project/vehicles.csv")
+df.cars <- data.frame(cars)
+
+## Frequency of Types of Cars
+kind <- cars %>%
+  group_by(type) %>%
+  summarise(frequency = n()) %>%
+  filter(type!="")#Removing empty cells
+kind %>%
+  ggplot( aes(x=type, y=frequency) ) +geom_segment( aes(x=type ,xend=type, y=0, yend=frequency))+
+  coord_flip()+labs(title = "Frequency of Types of Cars")
+
+## Average Car Price by State Barplot
+states <- cars %>%
+  group_by(state) %>%
+  summarise(avg_price = mean(price, na.rm = TRUE)) %>%
+  filter(state!="")#Removing empty cells
+# Using log to scale y axis
+ggplot(states, aes(x=reorder(state, -avg_price), y=log(avg_price), fill = state)) + geom_bar(stat = 'identity') + scale_fill_hue(l=40)+ylab("Log of Average Price")+xlab("State")+labs(title = "Average Car Price by State")
+
+## Arizona car prices by year of car
+az <- cars[cars$state == "az",]
+ggplot(az, aes(x=year, y=price)) + geom_point() + geom_smooth(method = "lm") +
+  ylim(0,NA) + ggtitle("Arizona Price of Cars by Year of Car")
+cor(az$year, az$price, use = "complete.obs")
+
+## Frequency of Car Colors in Arizona
+az_paint <- az %>%
+  group_by(paint_color) %>%
+  summarise(frequency = n()) %>%
+  filter(paint_color!="")#Removing empty cells
+ggplot(az_paint, aes(x=reorder(paint_color, -frequency), y=frequency))+geom_bar(stat ="identity")+
+  labs(title = "Frequency of Car Colors in Arizona")+ylab("Frequency")+xlab("Car Color")
